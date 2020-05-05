@@ -20,16 +20,27 @@ def create_dir(args):
 def fetch_images(filepath, amount):
     print("Starting the download of %d pictures" % amount)
 
-    for i in range(1, amount+1):
-        fp = os.path.join(filepath, 'image-%s.jpg' % i)
-        with open(fp, 'wb') as f:
-            f.write(requests.get(
+    last_image = None
+    i = 1
+    while i <= amount:
+        response = requests.get(
                 'https://thispersondoesnotexist.com/image',
                 headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:75.0) Gecko/20100101 Firefox/75.0'}
-            ).content)
+            ).content
 
-        print("\tDownloaded image %d/%d" % (i, amount))
-        time.sleep(2)
+        # If the response is not equal to the last (=> Not the same image again)
+        if response != last_image:
+            # Save the file
+            fp = os.path.join(filepath, 'image-%s.jpg' % i)
+            with open(fp, 'wb') as f:
+                f.write(response)
+
+            # Feedback
+            print("\tDownloaded image %d/%d" % (i, amount))
+
+            # Next iteration
+            i += 1
+            last_image = response
 
 
 def main():
