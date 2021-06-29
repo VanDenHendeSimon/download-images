@@ -4,16 +4,18 @@ import os
 import time
 
 
-def create_dir(args):
-    dirname = os.path.join(os.path.dirname(args[0]), 'images')
+def empty_dir(dirname):
+    [os.remove(os.path.join(dirname, f)) for f in os.listdir(dirname)]
+
+
+def create_dir(filepath):
+    dirname = os.path.join(os.path.dirname(filepath), 'images')
 
     if not os.path.exists(dirname):
-        # Create directory if this is necessary
         os.makedirs(dirname)
-    else:
-        # Remove contents
-        [os.remove(os.path.join(dirname, f)) for f in os.listdir(dirname)]
+        return dirname
 
+    empty_dir(dirname)
     return dirname
 
 
@@ -30,15 +32,9 @@ def fetch_images(filepath, amount):
 
         # If the response is not equal to the last (=> Not the same image again)
         if response != last_image:
-            # Save the file
-            fp = os.path.join(filepath, 'image-%s.jpg' % i)
-            with open(fp, 'wb') as f:
+            with open(os.path.join(filepath, 'image-%s.jpg' % i), 'wb') as f:
                 f.write(response)
 
-            # Feedback
-            print("\tDownloaded image %d/%d" % (i, amount))
-
-            # Next iteration
             i += 1
             last_image = response
 
@@ -48,10 +44,12 @@ def main():
 
     try:
         amount = int(args[1])
-    except Exception:
+    except IndexError:
+        amount = 1
+    except ValueError:
         amount = 1
 
-    directory = create_dir(args)
+    directory = create_dir(args[0])
     fetch_images(directory, amount)
 
 
